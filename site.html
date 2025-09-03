@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
+        /* Estilos CSS para a página */
         body { font-family: Arial, sans-serif; margin:20px; background:#f4f4f4; }
         h1 { color:#0056b3; }
         .cards { display:flex; gap:15px; margin-bottom:20px; }
@@ -18,7 +19,7 @@
         input, select { width:100%; padding:8px; margin-top:5px; box-sizing: border-box; }
         table { width:100%; border-collapse:collapse; margin-top:15px; }
         table, th, td { border:1px solid #ccc; }
-        th, td { padding:8px; text-align:center; }
+        th, td { padding:5px; text-align:center; }
         .btn { background:#0056b3; color:#fff; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; margin-top:10px; }
         .hidden { display: none !important; }
         .form-group { display: block; margin-top: 10px; }
@@ -51,10 +52,16 @@
             color: #0056b3;
             font-size: 14px;
         }
+        .param-group {
+            margin-bottom: 10px;
+        }
+        .param-group label {
+            font-weight: normal;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
-
 
     <h1>Relatórios</h1>
     <div class="cards">
@@ -63,6 +70,7 @@
         <div class="card" onclick="abrirAba(2)">Relatório de Não Faturamento</div>
     </div>
 
+    <!-- Formulário para Relatório de Faturamento Real -->
     <div class="form-section active" id="aba1">
         <h2>Relatório de Faturamento Real</h2>
         
@@ -109,6 +117,7 @@
         <button class="btn" onclick="gerarPDF1()">Exportar para PDF</button>
     </div>
 
+    <!-- Formulário para Relatório de Simulação de Faturamento -->
     <div class="form-section" id="aba2">
         <h2>Relatório de Simulação de Faturamento</h2>
         
@@ -153,6 +162,7 @@
             <option value="livre">Digitação Livre</option>
             <option value="media">Média por Total</option>
             <option value="aleatorio">Aleatórios Crescentes</option>
+            <option value="valorAlvo">Valor Alvo</option>
         </select>
         <div id="parametrosCalculo" style="margin-top:10px;"></div>
         <table id="tabela2">
@@ -162,6 +172,7 @@
         <button class="btn" onclick="gerarPDF2()">Exportar para PDF</button>
     </div>
 
+    <!-- Formulário para Relatório de Não Faturamento -->
     <div class="form-section" id="aba3">
         <h2>Relatório de Não Faturamento</h2>
         
@@ -245,9 +256,14 @@
         function formatarMoeda(input) {
             let valor = input.value.replace(/\D/g, '');
             if (valor === "") { input.value = ""; return; }
-            valor = (parseInt(valor) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+            valor = (parseInt(valor) / 100).toLocaleString("pt-BR", { 
+                style: "currency", 
+                currency: "BRL",
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
             input.value = valor;
-            if(input.id === 'valorTotalMedia') return;
+            if(input.id === 'valorTotalMedia' || input.id === 'valorAlvo' || input.id === 'valorMinimoInicial') return;
             calcularTotais();
         }
     
@@ -260,6 +276,9 @@
         function abrirAba(idx) {
             document.querySelectorAll('.card').forEach((c, i) => c.classList.toggle('active', i === idx));
             document.querySelectorAll('.form-section').forEach((s, i) => s.classList.toggle('active', i === idx));
+            if (idx === 1) {
+                configurarCalculo();
+            }
         }
 
         function toggleRepresentante(checkbox, divId) {
@@ -314,7 +333,7 @@
 
             while (anoIni < anoFim || (anoIni === anoFim && mesIni <= mesFim)) {
                 let mesFormatado = String(mesIni).padStart(2, '0');
-                tbody.innerHTML += `<tr><td>${mesFormatado}/${anoIni}</td><td><input type="text" oninput="formatarMoeda(this)"></td></tr>`;
+                tbody.innerHTML += `<tr><td>${mesFormatado}/${anoIni}</td><td><input type="text" oninput="formatarMoeta(this)"></td></tr>`;
                 mesIni++;
                 if (mesIni > 12) { mesIni = 1; anoIni++; }
             }
@@ -341,13 +360,36 @@
         function configurarCalculo() {
             const tipo = document.getElementById("calculo2").value;
             const div = document.getElementById("parametrosCalculo");
+            
             if (tipo === "aleatorio") {
-                div.innerHTML = `<label>Valor Inicial</label><input type="text" id="valorInicial" oninput="formatarMoeda(this)">
-                                 <label>Valor Final</label><input type="text" id="valorFinal" oninput="formatarMoeda(this)">
-                                 <button class="btn" onclick="gerarAleatorios()">Gerar Valores</button>`;
+                div.innerHTML = `
+                    <div class="param-group">
+                        <label>Valor Inicial</label>
+                        <input type="text" id="valorInicial" oninput="formatarMoeda(this)">
+                    </div>
+                    <div class="param-group">
+                        <label>Valor Final</label>
+                        <input type="text" id="valorFinal" oninput="formatarMoeda(this)">
+                    </div>
+                    <button class="btn" onclick="gerarAleatorios()">Gerar Valores</button>`;
             } else if (tipo === "media") {
-                div.innerHTML = `<label>Valor Total para Dividir</label><input type="text" id="valorTotalMedia" oninput="formatarMoeda(this)">
-                                 <button class="btn" onclick="gerarMedia()">Calcular Média</button>`;
+                div.innerHTML = `
+                    <div class="param-group">
+                        <label>Valor Total para Dividir</label>
+                        <input type="text" id="valorTotalMedia" oninput="formatarMoeda(this)">
+                    </div>
+                    <button class="btn" onclick="gerarMedia()">Calcular Média</button>`;
+            } else if (tipo === "valorAlvo") {
+                div.innerHTML = `
+                    <div class="param-group">
+                        <label>Valor Alvo (Total a ser atingido)</label>
+                        <input type="text" id="valorAlvo" oninput="formatarMoeda(this)">
+                    </div>
+                    <div class="param-group">
+                        <label>Valor Mínimo Inicial</label>
+                        <input type="text" id="valorMinimoInicial" oninput="formatarMoeda(this)" value="R$ 100,00">
+                    </div>
+                    <button class="btn" onclick="gerarValorAlvo()">Gerar Valores Crescentes</button>`;
             } else {
                 div.innerHTML = "";
             }
@@ -364,7 +406,12 @@
                 let valorBase = ini + i * passo;
                 let aleatorio = (Math.random() * passo - (passo / 2)) * 0.1;
                 let valorFinal = Math.max(0, valorBase + aleatorio);
-                tr.querySelector("input").value = valorFinal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+                tr.querySelector("input").value = valorFinal.toLocaleString("pt-BR", { 
+                    style: "currency", 
+                    currency: "BRL",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
             });    
             calcularTotais();
         }
@@ -376,9 +423,145 @@
 
             const media = total / linhas.length;
             linhas.forEach(tr => {
-                tr.querySelector("input").value = media.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+                tr.querySelector("input").value = media.toLocaleString("pt-BR", { 
+                    style: "currency", 
+                    currency: "BRL",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
             });
             calcularTotais();
+        }
+
+        function gerarValorAlvo() {
+            const valorAlvo = parseMoeda(document.getElementById("valorAlvo").value);
+            const valorMinimo = parseMoeda(document.getElementById("valorMinimoInicial").value) || 100;
+            const linhas = document.querySelectorAll("#tabela2 tbody tr:not(.total-row)");
+            
+            if (linhas.length === 0 || valorAlvo <= 0) {
+                alert("Por favor, gere a tabela primeiro e informe um valor alvo válido.");
+                return;
+            }
+
+            if (valorAlvo < valorMinimo * linhas.length) {
+                alert(`O valor alvo é muito baixo para o número de meses. Mínimo necessário: R$ ${(valorMinimo * linhas.length).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`);
+                return;
+            }
+
+            // Gerar valores crescentes aleatórios que somem exatamente o valor alvo
+            const valores = gerarValoresCrescentes(valorAlvo, linhas.length, valorMinimo);
+            
+            // Preencher a tabela com os valores gerados
+            linhas.forEach((tr, i) => {
+                tr.querySelector("input").value = valores[i].toLocaleString("pt-BR", { 
+                    style: "currency", 
+                    currency: "BRL",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            });
+            
+            calcularTotais();
+        }
+
+        function gerarValoresCrescentes(total, quantidade, minimo) {
+            // Algoritmo melhorado para gerar valores crescentes suaves e únicos
+            const valores = [];
+            
+            // Se houver apenas um mês, retornar o valor total
+            if (quantidade === 1) {
+                return [Math.round(total * 100) / 100];
+            }
+            
+            // Calcular o valor médio esperado por mês
+            const media = total / quantidade;
+            
+            // Definir o primeiro valor (pelo menos o mínimo, mas não muito acima da média)
+            let valorAtual = Math.max(minimo, media * 0.7);
+            valores.push(Math.round(valorAtual * 100) / 100);
+            
+            // Usar um percentual fixo de crescimento máximo (15%)
+            const percentualMaximo = 15;
+            
+            // Distribuir o crescimento restante de forma mais uniforme
+            let somaAtual = valorAtual;
+            
+            for (let i = 1; i < quantidade - 1; i++) {
+                // Calcular o crescimento máximo permitido para este mês
+                const crescimentoMaximo = valorAtual * (percentualMaximo / 100);
+                
+                // Calcular o crescimento mínimo necessário para os meses restantes
+                const crescimentoMinimo = Math.max(0, (total - somaAtual) / (quantidade - i) - valorAtual * 0.1);
+                
+                // Definir um crescimento aleatório dentro dos limites
+                let crescimento = Math.min(crescimentoMaximo, crescimentoMinimo);
+                
+                // Adicionar algua aleatoriedade (entre 70% e 100% do crescimento máximo permitido)
+                if (crescimento > 0) {
+                    crescimento = crescimento * (0.7 + Math.random() * 0.3);
+                }
+                
+                // Garantir crescimento mínimo de pelo menos 1% para evitar valores repetidos
+                crescimento = Math.max(crescimento, valorAtual * 0.01);
+                
+                // Calcular o próximo valor
+                valorAtual = valorAtual + crescimento;
+                valores.push(Math.round(valorAtual * 100) / 100);
+                somaAtual += valorAtual;
+            }
+            
+            // Último valor: ajustar para atingir exatamente o total
+            const ultimoValor = total - somaAtual;
+            
+            // Garantir que o último valor não seja menor que o anterior
+            if (ultimoValor < valores[valores.length - 1]) {
+                // Se for menor, redistribuir a diferença
+                const diferenca = valores[valores.length - 1] - ultimoValor;
+                const ajustePorValor = diferenca / (quantidade - 1);
+                
+                for (let i = 0; i < quantidade - 1; i++) {
+                    valores[i] = Math.round((valores[i] - ajustePorValor) * 100) / 100;
+                }
+                
+                // Recalcular o último valor
+                const novaSoma = valores.reduce((a, b) => a + b, 0);
+                valores.push(Math.round((total - novaSoma) * 100) / 100);
+            } else {
+                valores.push(Math.round(ultimoValor * 100) / 100);
+            }
+            
+            // Garantir que todos os valores sejam crescentes e únicos
+            for (let i = 1; i < valores.length; i++) {
+                if (valores[i] <= valores[i-1]) {
+                    // Se não for crescente, ajustar
+                    const diferencaMinima = valores[i-1] * 0.01; // Mínimo 1% de diferença
+                    valores[i] = valores[i-1] + diferencaMinima;
+                }
+            }
+            
+            // Ajustar o último valor novamente se necessário
+            const somaAjustada = valores.reduce((a, b) => a + b, 0);
+            if (Math.abs(somaAjustada - total) > 0.01) {
+                const diferenca = total - somaAjustada;
+                valores[valores.length - 1] = Math.round((valores[valores.length - 1] + diferenca) * 100) / 100;
+            }
+            
+            // Verificação final para garantir que todos os valores sejam únicos
+            const valoresUnicos = [...new Set(valores)];
+            if (valoresUnicos.length !== valores.length) {
+                // Se houver valores duplicados, adicionar pequenas variações
+                for (let i = 1; i < valores.length; i++) {
+                    if (valores[i] <= valores[i-1]) {
+                        valores[i] = valores[i-1] + (valores[i-1] * 0.01); // Adiciona 1% ao valor anterior
+                    }
+                }
+                
+                // Ajustar o último valor novamente para garantir a soma correta
+                const somaFinal = valores.reduce((a, b) => a + b, 0);
+                valores[valores.length - 1] = Math.round((valores[valores.length - 1] + (total - somaFinal)) * 100) / 100;
+            }
+            
+            return valores;
         }
     
         // --- FUNÇÃO PARA DESENHAR TEXTO COM PARTES EM NEGRITO ---
@@ -397,7 +580,7 @@
             }
         }
 
-        // --- FUNÇÃO PARA ADICIONAR LOGO FIXA NO LADO DIREITO DO PDF ---
+        // --- FUNÇÃO PARA ADICIONAR LOGO FIXA NO LADO DIREITO OF PDF ---
         function addFixedLogoToPDF(doc, startY) {
             try {
                 // Adicionar a logo no lado direito do documento
@@ -425,11 +608,57 @@
             }
         }
 
+        // --- FUNÇÃO PARA FORMATAR RAZÃO SOCIAL NO PDF ---
+        function formatarRazaoSocialParaPDF(razaoSocial) {
+            if (!razaoSocial || razaoSocial.length <= 25) {
+                return razaoSocial;
+            }
+            
+            // Divide a razão social em palavras
+            const palavras = razaoSocial.split(' ');
+            
+            // Se tiver menos de 3 palavras, divide no meio
+            if (palavras.length < 3) {
+                const meio = Math.floor(razaoSocial.length / 2);
+                return razaoSocial.substring(0, meio) + '\n' + razaoSocial.substring(meio);
+            }
+            
+            // Tenta dividir após a segunda palavra
+            let primeiraLinha = palavras[0] + ' ' + palavras[1];
+            let segundaLinha = palavras.slice(2).join(' ');
+            
+            // Se a primeira linha for muito longa, tenta um ponto de divisão diferente
+            if (primeiraLinha.length > 25) {
+                primeiraLinha = palavras[0];
+                segundaLinha = palavras.slice(1).join(' ');
+            }
+            
+            // Se a segunda linha for muito longa, tenta dividir novamente
+            if (segundaLinha.length > 30) {
+                const meio = Math.floor(segundaLinha.length / 2);
+                const parte1 = segundaLinha.substring(0, meio);
+                const parte2 = segundaLinha.substring(meio);
+                
+                // Encontra o último espaço na primeira metade
+                const ultimoEspaco = parte1.lastIndexOf(' ');
+                if (ultimoEspaco !== -1) {
+                    segundaLinha = parte1.substring(0, ultimoEspaco) + '\n' + parte1.substring(ultimoEspaco + 1) + parte2;
+                } else {
+                    segundaLinha = parte1 + '\n' + parte2;
+                }
+                
+                return primeiraLinha + '\n' + segundaLinha;
+            }
+            
+            return primeiraLinha + '\n' + segundaLinha;
+        }
+
         // --- FUNÇÕES DE GERAÇÃO DE PDF ---
         function drawSignatures(doc, startY, assinatura, clienteInfo, contadorInfo) {
-            const center = 105;
-            const left = 25;
-            const right = 115;
+            const pageWidth = doc.internal.pageSize.width;
+            const center = pageWidth / 2;
+            const left = 30;
+            const right = pageWidth - 100;
             const lineLength = 70;
 
             const drawCliente = (x, y) => {
@@ -442,41 +671,60 @@
                 let documentoPrincipal;
 
                 if (clienteInfo.razaoSocial && clienteInfo.razaoSocial !== "EMPRESA NÃO INFORMADA") {
-                    nomePrincipal = clienteInfo.razaoSocial;
+                    // Formatar a razão social para o PDF
+                    nomePrincipal = formatarRazaoSocialParaPDF(clienteInfo.razaoSocial);
                     documentoPrincipal = `CNPJ: ${clienteInfo.cnpj}`;
                 } else {
                     nomePrincipal = clienteInfo.repNome;
                     documentoPrincipal = `CPF: ${clienteInfo.repCpf}`;
                 }
 
-                doc.text(nomePrincipal.toUpperCase(), x + lineLength / 2, y + 5, { align: 'center' });
+                // Nome Cliente (pode ter várias linhas)
+                const nomeLinhas = nomePrincipal.split('\n');
+                let currentY = y + 5;
+                
+                nomeLinhas.forEach(linha => {
+                    doc.text(linha.toUpperCase(), x + lineLength / 2, currentY, { align: 'center' });
+                    currentY += 5;
+                });
 
+                // Documento CNPJ/CPF
                 doc.setFont("helvetica", 'normal');
                 doc.setFontSize(10);
-                doc.text(documentoPrincipal, x + lineLength / 2, y + 10, { align: 'center' });
+                doc.text(documentoPrincipal, x + lineLength / 2, currentY, { align: 'center' });
                 doc.setFontSize(12);
             };
 
             const drawContador = (x, y) => {
                 doc.line(x, y, x + lineLength, y);
+
+                // Nome do Contador
                 doc.setFont("helvetica", 'bold');
                 doc.text(contadorInfo.nome.toUpperCase(), x + lineLength / 2, y + 5, { align: 'center' });
+
+                // CRC do Contador
                 doc.setFont("helvetica", 'normal');
                 doc.setFontSize(10);
                 doc.text(contadorInfo.crc, x + lineLength / 2, y + 10, { align: 'center' });
+
+                // Estados do CRC (linha unica)
                 if (contadorInfo.crcEstados) {
                     doc.text(contadorInfo.crcEstados, x + lineLength / 2, y + 15, { align: 'center' });
                 }
                 doc.setFontSize(12);
             };
 
+            // Ajustar a posição Y para evitar espaço excessivo
+            const signatureBaseY = startY + 10; // Reduzindo o espaço antes das assinaturas
+
             if (assinatura === 'Cliente') {
-                drawCliente(center - lineLength / 2, startY);
+                drawCliente(center - lineLength / 2, signatureBaseY);
             } else if (assinatura === 'Contador') {
-                drawContador(center - lineLength / 2, startY);
+                drawContador(center - lineLength / 2, signatureBaseY);
             } else if (assinatura === 'Ambos') {
-                drawCliente(left, startY + 10);
-                drawContador(right, startY + 10);
+                // Cliente à esquerda, contador à direita
+                drawCliente(left, startY + 10); // Altura assinatura Cliente 
+                drawContador(right, startY + 30); // Altura assinatura Contador
             }
         }
 
@@ -544,8 +792,11 @@
             doc.setFontSize(12);
             doc.setFont("helvetica", "normal");
 
+            // Formatar a razão social para o PDF se for muito longa
+            const razaoSocialFormatada = formatarRazaoSocialParaPDF(data.clienteInfo.razaoSocial || "NOME DA EMPRESA NÃO ENCONTRADO");
+            
             let frase = fraseDeclaracao
-                .replace('{razaoSocial}', data.clienteInfo.razaoSocial || "NOME DA EMPRESA NÃO ENCONTRADO")
+                .replace('{razaoSocial}', razaoSocialFormatada)
                 .replace('{cnpj}', data.clienteInfo.cnpj)
                 .replace('{endereco}', data.clienteInfo.endereco)
                 .replace('{representante}', data.representanteTexto);
@@ -575,7 +826,7 @@
                 valores.push(['TOTAL:', soma.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })]);
     
                 if (typeof doc.autoTable !== 'undefined') {
-                    //Amazena a posição Y final após a tabela
+                    // Amazena a posição Y final após a tabela
                     const alturaTabela = (valores.length + 1) * 10; // Aproximadamente 10 unidades por linha
 
                     // Se a tabela não couber na página atual, adicionar nova página
@@ -592,7 +843,7 @@
                         tableWidth: 100,
                         styles: {
                             fontSize: 10,
-                            cellPadding: 3,
+                            cellPadding: 1, // Controla o espaço interno de cada celula da Planilha
                             valign: 'middle',
                             halign: 'center'
                         },
@@ -609,12 +860,16 @@
                         alternateRowStyles: {
                             fillColor: [240, 240, 240]
                         },
+                        rowHeight: 2, 
                         didParseCell: function(data) {
+                            if (data.section === 'head') {
+                                data.cell.styles.minCellHeight = 5; // altura maior só no cabeçalho
+                            }
+
                             if (data.row.index === valores.length - 1) {
-                                // Estilizar a linha do TOTAL
                                 data.cell.styles.fontStyle = 'bold';
                                 data.cell.styles.fillColor = [217, 225, 242];
-                                data.cell.styles.fontStyle = 'bold';
+                                data.cell.styles.minCellHeight = 5; // Aumenta a altura da linha do total
                             }    
                         }
                     });
@@ -646,7 +901,7 @@
             drawSignatures(doc, finalY + 35, assinatura, data.clienteInfo, data.contadorInfo);
 
             const nomeArquivo = titulo.replace(/ /g, '_') + '.pdf';
-            doc.save(nomeArquivo);c 
+            doc.save(nomeArquivo);
         }
 
         function gerarPDF1() {
@@ -661,7 +916,7 @@
             const inicio = document.getElementById("inicio2").value;
             const fim = document.getElementById("fim2").value;
             // Adicionando ** ao redor do período para ficar em negrito
-            const frase = `A empresa **{razaoSocial}**, inscrita no CNPJ sob o n° ${document.getElementById('cnpj2').value}, com sede em ${document.getElementById('dadosEmpresa2').dataset.endereco}{representante}, declara por meio deste a simulação de faturamento no período de **${formatarPeriodo(inicio)}** até **${formatarPeriodo(fim)}** conforme descriminado abaixo:`;
+            const frase = `A empresa **{razaoSocial}**, inscrita no CNPJ sob o n° ${document.getElementById('cnpj2').value}, com sede em ${document.getElementById('dadosEmpresa2').dataset.endereco}{representante}, declara por meio deste o faturamento no período de  **${formatarPeriodo(inicio)}** até **${formatarPeriodo(fim)}** conforme descriminado abaixo:`;
             gerarPDF('2', 'RELATÓRIO DE FATURAMENTO', frase);
         }
 
@@ -669,9 +924,15 @@
             const inicio = document.getElementById("inicio3").value;
             const fim = document.getElementById("fim3").value;
             // Adicionando ** ao redor do período para ficar em negrito
-            const frase = `A empresa **{razaoSocial}**, inscrita no CNPJ sob o n° ${document.getElementById('cnpj3').value}, com sede em ${document.getElementById('dadosEmpresa3').dataset.endereco}{representante}, declara por meio deste que no período de **${formatarPeriodo(inicio)}** até **${formatarPeriodo(fim)}** não houve faturamento.`;
+            const frase = `A empresa **{razaoSocial}**, inscrita no CNPJ sob no n° ${document.getElementById('cnpj3').value}, com sede em ${document.getElementById('dadosEmpresa3').dataset.endereco}{representante}, declara por meio deste que no período de  **${formatarPeriodo(inicio)}** até **${formatarPeriodo(fim)}** não houve faturamento.`;
             gerarPDF('3', 'DECLARAÇÃO DE NÃO FATURAMENTO', frase);
         }
+
+        // Inicializar a configuração de cálculo quando a página carregar
+        window.onload = function() {
+            configurarCalculo();
+        };
     </script>
 </body>
 </html>
+
