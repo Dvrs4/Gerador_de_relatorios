@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Área Restrita</title>
+  <meta charset="UTF-8">
+</head>
+<body>
+  <h2>Digite a senha para acessar:</h2>
+  <input type="password" id="senha" />
+  <button onclick="verificarSenha()">Entrar</button>
+
+  <script>
+    function verificarSenha() {
+      const senha = document.getElementById("senha").value;
+      // senha fixa (não é super seguro, mas esconde do público geral)
+      if (senha === "minhaSenha123") {
+        window.location.href = "site.html"; // sua página real
+      } else {
+        alert("Senha incorreta!");
+      }
+    }
+  </script>
+</body>
+</html>
