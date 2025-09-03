@@ -1,24 +1,39 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Área Restrita</title>
+    <meta charset="UTF-8">
+    <title>Página de Login</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>Digite a senha para acessar o sistema:</h2>
-  <input type="password" id="senha" />
-  <button onclick="verificarSenha()">Entrar</button>
+    <div class="ring">
+        <i style="--clr:#00ff0a;"></i>
+        <i style="--clr:#ff0057;"></i>
+        <i style="--clr:#f7f309;"></i>
+        <div class="login">
+            <h2>Login</h2>
+            <div class="inputbox">
+                <input type="password" id="senha" placeholder="Digite a senha">
+            </div> 
+            <div class="inputbox">
+                <input type="button" value="Sign in" onclick="verificarSenha()">
+            </div>
+            <div class="links">
+                <a href="#">Esqueceu a senha?</a>
+                <a href="#">Signup</a>
+            </div>
+        </div>
+    </div>
 
-  <script>
-    function verificarSenha() {
-      const senha = document.getElementById("senha").value;
-      // Defina sua senha aqui
-      if (senha === "teste123") {
-        window.location.href = "site.html"; // redireciona para seu sistema real
-      } else {
-        alert("Senha incorreta!");
-      }
-    }
-  </script>
+    <script>
+        function verificarSenha() {
+            const senha = document.getElementById("senha").value;
+            if (senha === "teste123") {
+                window.location.href = "site.html"; // 🔗 página principal
+            } else {
+                alert("Senha incorreta!");
+            }
+        }
+    </script>
 </body>
 </html>
