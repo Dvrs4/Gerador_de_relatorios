@@ -14,6 +14,69 @@
         .card.active { border:2px solid #0056b3; }
         .form-section { display:none; background:#fff; padding:20px; border-radius:8px; }
         .form-section.active { display:block; }
+        
+        /* NOVO ESTILO - CAIXAS LADO A LADO */
+        .caixas-superiores {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .caixa-superior {
+            flex: 1;
+            min-width: 200px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        .caixa-superior:hover {
+            border-color: #0056b3;
+        }
+        .caixa-superior.selecionada {
+            border-color: #0056b3;
+            background-color: #f8f9fa;
+        }
+        .caixa-titulo {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .conteudo-caixa {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        .caixa-superior.selecionada .conteudo-caixa {
+            display: block;
+        }
+        
+        /* Estilo para mostrar seleções anteriores */
+        .resumo-selecao {
+            font-size: 12px;
+            color: #333;
+            margin-top: 5px;
+            font-weight: normal;
+            background: #f0f8ff;
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid #0056b3;
+        }
+        .resumo-dados {
+            margin: 2px 0;
+            line-height: 1.3;
+        }
+        .resumo-titulo {
+            font-weight: bold;
+            color: #0056b3;
+            margin-bottom: 3px;
+        }
+        
+        /* FIM DO NOVO ESTILO */
+
         label { font-weight:bold; margin-top:10px; display:block; }
         input, select { width:100%; padding:8px; margin-top:5px; box-sizing: border-box; }
         table { width:100%; border-collapse:collapse; margin-top:15px; }
@@ -62,51 +125,79 @@
 </head>
 <body>
 
-    <h1>Relatórios</h1>
+    <h1> GERADOR DE RELAÇÃO DE FATURAMENTO</h1>
     <div class="cards">
         <div class="card active" onclick="abrirAba(0)">Relatório de Faturamento Real</div>
-        <div class="card" onclick="abrirAba(1)">Relatório de Simulação de Faturamento</div>
+        <div class="card" onclick="abrirAba(1)">Relatório de Faturamento Simulado</div>
         <div class="card" onclick="abrirAba(2)">Relatório de Não Faturamento</div>
+        <div class="card" onclick="abrirAba(3)">Previsão de Fatura</div>
     </div>
 
     <div class="form-section active" id="aba1">
         <h2>Relatório de Faturamento Real</h2>
         
-        <label>Quem vai assinar:</label>
-        <select id="assinatura1">
-            <option value="">Selecione...</option>
-            <option value="Cliente">Cliente</option>
-            <option value="Contador">Contador</option>
-            <option value="Ambos">Cliente e Contador</option>
-        </select>
-        <div class="form-group" id="bloco-contador1" style="display:none;">
-            <label>Dados do contador:</label>
-            <div class="contador-info">
-                <p id="nomeContador1">THIAGO VIEIRA DOS SANTOS</p>
-                <p id="crcContador1">Contador CRC-TO: 004845-O</p>
-                <p id="crcEstados1">CRC Ativo Estados: TO/PA/PI/MA/GO/SP/RJ/PR/SC</p>
+        <div class="caixas-superiores">
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'assinatura1')">
+                <div class="caixa-titulo">Quem vai assinar:</div>
+                <div id="resumo-assinatura1" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <select id="assinatura1" onchange="atualizarResumoAssinatura('1')">
+                        <option value="">Selecione...</option>
+                        <option value="Cliente">Cliente</option>
+                        <option value="Contador">Contador</option>
+                        <option value="Ambos">Cliente e Contador</option>
+                    </select>
+                    <div class="form-group" id="bloco-contador1" style="display:none;">
+                        <label>Dados do contador:</label>
+                        <div class="contador-info">
+                            <p id="nomeContador1">THIAGO VIEIRA DOS SANTOS</p>
+                            <p id="crcContador1">Contador CRC-TO: 004845-O</p>
+                            <p id="crcEstados1">CRC Ativo nos Estados: TO/PA/PI/MA/GO/SP/RJ/PR/SC</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" id="caixa-representante1" style="display:none;" onclick="selecionarCaixa(this, 'representante1')">
+                <div class="caixa-titulo">Deseja informar o representante legal?</div>
+                <div id="resumo-representante1" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" onclick="toggleRepresentante(this,'rep-real')"> Sim, informar representante
+                        </label>
+                    </div>
+                    <div id="rep-real" class="hidden" style="margin-bottom:10px;">
+                        <input type="text" id="repNome1" placeholder="Nome do Representante" disabled oninput="atualizarResumoRepresentante('1')">
+                        <input type="text" id="repCpf1" placeholder="CPF do Representante" oninput="formatarCPF(this)" disabled onchange="atualizarResumoRepresentante('1')">
+                        <input type="text" id="repNacionalidade1" placeholder="Nacionalidade" disabled onchange="atualizarResumoRepresentante('1')">
+                        <input type="text" id="repDataNascimento1" placeholder="Data de Nascimento (DD/MM/AAAA)" oninput="formatarDataNascimento(this)" disabled onchange="atualizarResumoRepresentante('1')">
+                        <input type="text" id="repRg1" placeholder="RG - Órgão emissor" disabled onchange="atualizarResumoRepresentante('1')">
+                        <input type="text" id="repEndereco1" placeholder="Endereço - Logradouro/CEP" disabled onchange="atualizarResumoRepresentante('1')">
+                        <input type="text" id="repEstadoCivil1" placeholder="Estado Civil" disabled onchange="atualizarResumoRepresentante('1')">
+                        <input type="text" id="repProfissao1" placeholder="Profissão" disabled onchange="atualizarResumoRepresentante('1')">
+                    </div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'cnpj1')">
+                <div class="caixa-titulo">CNPJ da Empresa</div>
+                <div id="resumo-cnpj1" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <input type="text" id="cnpj1" placeholder="00.000.000/0000-00" oninput="formatarCNPJ(this)" onblur="buscarCNPJ(this.value, 'dadosEmpresa1'); atualizarResumoCNPJ('1')">
+                    <div id="dadosEmpresa1" data-razao-social="" data-endereco=""></div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'periodo1')">
+                <div class="caixa-titulo">Período</div>
+                <div id="resumo-periodo1" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <input type="month" id="inicio1" onchange="atualizarResumoPeriodo('1')"> até <input type="month" id="fim1" onchange="atualizarResumoPeriodo('1')">
+                </div>
             </div>
         </div>
-        <div class="form-group">
-            <label>
-                <input type="checkbox" onclick="toggleRepresentante(this,'rep-real')"> Deseja informar o representante legal?
-            </label>
-        </div>
-        <div id="rep-real" class="hidden" style="margin-bottom:10px;">
-            <input type="text" id="repNome1" placeholder="Nome do Representante" disabled>
-            <input type="text" id="repCpf1" placeholder="CPF do Representante" oninput="formatarCPF(this)" disabled>
-            <input type="text" id="repNacionalidade1" placeholder="Nacionalidade" disabled>
-            <input type="text" id="repDataNascimento1" placeholder="Data de Nascimento (DD/MM/AAAA)" oninput="formatarDataNascimento(this)" disabled>
-            <input type="text" id="repRg1" placeholder="RG - Órgão emissor" disabled>
-            <input type="text" id="repEndereco1" placeholder="Endereço - Logradouro/CEP" disabled>
-            <input type="text" id="repEstadoCivil1" placeholder="Estado Civil" disabled>
-            <input type="text" id="repProfissao1" placeholder="Profissão" disabled>
-        </div>
-        <label>CNPJ da Empresa:</label>
-        <input type="text" id="cnpj1" placeholder="00.000.000/0000-00" oninput="formatarCNPJ(this)" onblur="buscarCNPJ(this.value, 'dadosEmpresa1')">
-        <div id="dadosEmpresa1" data-razao-social="" data-endereco=""></div>
-        <label>Período</label>
-        <input type="month" id="inicio1"> até <input type="month" id="fim1">
+
         <button class="btn" onclick="gerarTabela('inicio1','fim1','tabela1')">Gerar Tabela</button>
         <table id="tabela1">
             <thead><tr><th>Mês/Ano</th><th>Valores</th></tr></thead>
@@ -118,41 +209,68 @@
     <div class="form-section" id="aba2">
         <h2>Relatório de Simulação de Faturamento</h2>
         
-        <label>Quem vai assinar:</label>
-        <select id="assinatura2">
-            <option value="">Selecione...</option>
-            <option value="Cliente">Cliente</option>
-            <option value="Contador">Contador</option>
-            <option value="Ambos">Cliente e Contador</option>
-        </select>
-        <div class="form-group" id="bloco-contador2" style="display:none;">
-            <label>Dados do contador:</label>
-            <div class="contador-info">
-                <p id="nomeContador2">THIAGO VIEIRA DOS SANTOS</p>
-                <p id="crcContador2">Contador CRC-TO: 004845-O</p>
-                <p id="crcEstados2">CRC Ativo Estados: TO/PA/PI/MA/GO/SP/RJ/PR/SC</p>
+        <div class="caixas-superiores">
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'assinatura2')">
+                <div class="caixa-titulo">Quem vai assinar:</div>
+                <div id="resumo-assinatura2" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <select id="assinatura2" onchange="atualizarResumoAssinatura('2')">
+                        <option value="">Selecione...</option>
+                        <option value="Cliente">Cliente</option>
+                        <option value="Contador">Contador</option>
+                        <option value="Ambos">Cliente e Contador</option>
+                    </select>
+                    <div class="form-group" id="bloco-contador2" style="display:none;">
+                        <label>Dados do contador:</label>
+                        <div class="contador-info">
+                            <p id="nomeContador2">THIAGO VIEIRA DOS SANTOS</p>
+                            <p id="crcContador2">Contador CRC-TO: 004845-O</p>
+                            <p id="crcEstados2">CRC Ativo nos Estados: TO/PA/PI/MA/GO/SP/RJ/PR/SC</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" id="caixa-representante2" style="display:none;" onclick="selecionarCaixa(this, 'representante2')">
+                <div class="caixa-titulo">Deseja informar o representante legal?</div>
+                <div id="resumo-representante2" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" onclick="toggleRepresentante(this,'rep-sim')"> Sim, informar representante
+                        </label>
+                    </div>
+                    <div id="rep-sim" class="hidden" style="margin-bottom:10px;">
+                        <input type="text" id="repNome2" placeholder="Nome do Representante" disabled oninput="atualizarResumoRepresentante('2')">
+                        <input type="text" id="repCpf2" placeholder="CPF do Representante" oninput="formatarCPF(this)" disabled onchange="atualizarResumoRepresentante('2')">
+                        <input type="text" id="repNacionalidade2" placeholder="Nacionalidade" disabled onchange="atualizarResumoRepresentante('2')">
+                        <input type="text" id="repDataNascimento2" placeholder="Data de Nascimento (DD/MM/AAAA)" oninput="formatarDataNascimento(this)" disabled onchange="atualizarResumoRepresentante('2')">
+                        <input type="text" id="repRg2" placeholder="RG - Órgão emissor" disabled onchange="atualizarResumoRepresentante('2')">
+                        <input type="text" id="repEndereco2" placeholder="Endereço - Logradouro/CEP" disabled onchange="atualizarResumoRepresentante('2')">
+                        <input type="text" id="repEstadoCivil2" placeholder="Estado Civil" disabled onchange="atualizarResumoRepresentante('2')">
+                        <input type="text" id="repProfissao2" placeholder="Profissão" disabled onchange="atualizarResumoRepresentante('2')">
+                    </div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'cnpj2')">
+                <div class="caixa-titulo">CNPJ da Empresa</div>
+                <div id="resumo-cnpj2" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <input type="text" id="cnpj2" placeholder="00.000.000/0000-00" oninput="formatarCNPJ(this)" onblur="buscarCNPJ(this.value, 'dadosEmpresa2'); atualizarResumoCNPJ('2')">
+                    <div id="dadosEmpresa2" data-razao-social="" data-endereco=""></div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'periodo2')">
+                <div class="caixa-titulo">Período</div>
+                <div id="resumo-periodo2" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <input type="month" id="inicio2" onchange="atualizarResumoPeriodo('2')"> até <input type="month" id="fim2" onchange="atualizarResumoPeriodo('2')">
+                </div>
             </div>
         </div>
-        <div class="form-group">
-            <label>
-                <input type="checkbox" onclick="toggleRepresentante(this,'rep-sim')"> Deseja informar o representante legal?
-            </label>
-        </div>
-        <div id="rep-sim" class="hidden" style="margin-bottom:10px;">
-            <input type="text" id="repNome2" placeholder="Nome do Representante" disabled>
-            <input type="text" id="repCpf2" placeholder="CPF do Representante" oninput="formatarCPF(this)" disabled>
-            <input type="text" id="repNacionalidade2" placeholder="Nacionalidade" disabled>
-            <input type="text" id="repDataNascimento2" placeholder="Data de Nascimento (DD/MM/AAAA)" oninput="formatarDataNascimento(this)" disabled>
-            <input type="text" id="repRg2" placeholder="RG - Órgão emissor" disabled>
-            <input type="text" id="repEndereco2" placeholder="Endereço - Logradouro/CEP" disabled>
-            <input type="text" id="repEstadoCivil2" placeholder="Estado Civil" disabled>
-            <input type="text" id="repProfissao2" placeholder="Profissão" disabled>
-        </div>
-        <label>CNPJ da Empresa:</label>
-        <input type="text" id="cnpj2" placeholder="00.000.000/0000-00" oninput="formatarCNPJ(this)" onblur="buscarCNPJ(this.value, 'dadosEmpresa2')">
-        <div id="dadosEmpresa2" data-razao-social="" data-endereco=""></div>
-        <label>Período</label>
-        <input type="month" id="inicio2"> até <input type="month" id="fim2">
+
         <button class="btn" onclick="gerarTabela('inicio2','fim2','tabela2')">Gerar Tabela</button>
         <label>Forma de cálculo</label>
         <select id="calculo2" onchange="configurarCalculo()">
@@ -172,49 +290,292 @@
     <div class="form-section" id="aba3">
         <h2>Relatório de Não Faturamento</h2>
         
-        <label>Quem vai assinar:</label>
-        <select id="assinatura3">
-            <option value="">Selecione...</option>
-            <option value="Cliente">Cliente</option>
-            <option value="Contador">Contador</option>
-            <option value="Ambos">Cliente e Contador</option>
-        </select>
-        <div class="form-group" id="bloco-contador3" style="display:none;">
-            <label>Dados do contador:</label>
-            <div class="contador-info">
-                <p id="nomeContador3">THIAGO VIEIRA DOS SANTOS</p>
-                <p id="crcContador3">Contador CRC-TO: 004845-O</p>
-                <p id="crcEstados3">CRC Ativo Estados: TO/PA/PI/MA/GO/SP/RJ/PR/SC</p>
+        <div class="caixas-superiores">
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'assinatura3')">
+                <div class="caixa-titulo">Quem vai assinar:</div>
+                <div id="resumo-assinatura3" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <select id="assinatura3" onchange="atualizarResumoAssinatura('3')">
+                        <option value="">Selecione...</option>
+                        <option value="Cliente">Cliente</option>
+                        <option value="Contador">Contador</option>
+                        <option value="Ambos">Cliente e Contador</option>
+                    </select>
+                    <div class="form-group" id="bloco-contador3" style="display:none;">
+                        <label>Dados do contador:</label>
+                        <div class="contador-info">
+                            <p id="nomeContador3">THIAGO VIEIRA DOS SANTOS</p>
+                            <p id="crcContador3">Contador CRC-TO: 004845-O</p>
+                            <p id="crcEstados3">CRC Ativo nos Estados: TO/PA/PI/MA/GO/SP/RJ/PR/SC</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" id="caixa-representante3" style="display:none;" onclick="selecionarCaixa(this, 'representante3')">
+                <div class="caixa-titulo">Deseja informar o representante legal?</div>
+                <div id="resumo-representante3" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" onclick="toggleRepresentante(this,'rep-nao')"> Sim, informar representante
+                        </label>
+                    </div>
+                    <div id="rep-nao" class="hidden" style="margin-bottom:10px;">
+                        <input type="text" id="repNome3" placeholder="Nome do Representante" disabled oninput="atualizarResumoRepresentante('3')">
+                        <input type="text" id="repCpf3" placeholder="CPF do Representante" oninput="formatarCPF(this)" disabled onchange="atualizarResumoRepresentante('3')">
+                        <input type="text" id="repNacionalidade3" placeholder="Nacionalidade" disabled onchange="atualizarResumoRepresentante('3')">
+                        <input type="text" id="repDataNascimento3" placeholder="Data de Nascimento (DD/MM/AAAA)" oninput="formatarDataNascimento(this)" disabled onchange="atualizarResumoRepresentante('3')">
+                        <input type="text" id="repRg3" placeholder="RG - Órgão emissor" disabled onchange="atualizarResumoRepresentante('3')">
+                        <input type="text" id="repEndereco3" placeholder="Endereço - Logradouro/CEP" disabled onchange="atualizarResumoRepresentante('3')">
+                        <input type="text" id="repEstadoCivil3" placeholder="Estado Civil" disabled onchange="atualizarResumoRepresentante('3')">
+                        <input type="text" id="repProfissao3" placeholder="Profissão" disabled onchange="atualizarResumoRepresentante('3')">
+                    </div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'cnpj3')">
+                <div class="caixa-titulo">CNPJ da Empresa</div>
+                <div id="resumo-cnpj3" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <input type="text" id="cnpj3" placeholder="00.000.000/0000-00" oninput="formatarCNPJ(this)" onblur="buscarCNPJ(this.value, 'dadosEmpresa3'); atualizarResumoCNPJ('3')">
+                    <div id="dadosEmpresa3" data-razao-social="" data-endereco=""></div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'periodo3')">
+                <div class="caixa-titulo">Período</div>
+                <div id="resumo-periodo3" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <input type="month" id="inicio3" onchange="atualizarResumoPeriodo('3')"> até <input type="month" id="fim3" onchange="atualizarResumoPeriodo('3')">
+                </div>
             </div>
         </div>
-        <div class="form-group">
-            <label>
-                <input type="checkbox" onclick="toggleRepresentante(this,'rep-nao')"> Deseja informar o representante legal?
-            </label>
-        </div>
-        <div id="rep-nao" class="hidden" style="margin-bottom:10px;">
-            <input type="text" id="repNome3" placeholder="Nome do Representante" disabled>
-            <input type="text" id="repCpf3" placeholder="CPF do Representante" oninput="formatarCPF(this)" disabled>
-            <input type="text" id="repNacionalidade3" placeholder="Nacionalidade" disabled>
-            <input type="text" id="repDataNascimento3" placeholder="Data de Nascimento (DD/MM/AAAA)" oninput="formatarDataNascimento(this)" disabled>
-            <input type="text" id="repRg3" placeholder="RG - Órgão emissor" disabled>
-            <input type="text" id="repEndereco3" placeholder="Endereço - Logradouro/CEP" disabled>
-            <input type="text" id="repEstadoCivil3" placeholder="Estado Civil" disabled>
-            <input type="text" id="repProfissao3" placeholder="Profissão" disabled>
-        </div>
-        <label>CNPJ da Empresa:</label>
-        <input type="text" id="cnpj3" placeholder="00.000.000/0000-00" oninput="formatarCNPJ(this)" onblur="buscarCNPJ(this.value, 'dadosEmpresa3')">
-        <div id="dadosEmpresa3" data-razao-social="" data-endereco=""></div>
-        <label>Período</label>
-        <input type="month" id="inicio3"> até <input type="month" id="fim3">
+
         <div id="mensagem3" style="margin-top:15px; font-style:italic;">
             No período selecionado não houve faturamento.
         </div>
         <button class="btn" onclick="gerarPDF3()">Exportar para PDF</button>
     </div>
 
+    <div class="form-section" id="aba4">
+        <h2>Previsão de Fatura</h2>
+        
+        <div class="caixas-superiores">
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'assinatura4')">
+                <div class="caixa-titulo">Quem vai assinar:</div>
+                <div id="resumo-assinatura4" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <select id="assinatura4" onchange="atualizarResumoAssinatura('4')">
+                        <option value="">Selecione...</option>
+                        <option value="Cliente">Cliente</option>
+                        <option value="Contador">Contador</option>
+                        <option value="Ambos">Cliente e Contador</option>
+                    </select>
+                    <div class="form-group" id="bloco-contador4" style="display:none;">
+                        <label>Dados do contador:</label>
+                        <div class="contador-info">
+                            <p id="nomeContador4">THIAGO VIEIRA DOS SANTOS</p>
+                            <p id="crcContador4">Contador CRC-TO: 004845-O</p>
+                            <p id="crcEstados4">CRC Ativo nos Estados: TO/PA/PI/MA/GO/SP/RJ/PR/SC</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" id="caixa-representante4" style="display:none;" onclick="selecionarCaixa(this, 'representante4')">
+                <div class="caixa-titulo">Deseja informar o representante legal?</div>
+                <div id="resumo-representante4" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" onclick="toggleRepresentante(this,'rep-prev')"> Sim, informar representante
+                        </label>
+                    </div>
+                    <div id="rep-prev" class="hidden" style="margin-bottom:10px;">
+                        <input type="text" id="repNome4" placeholder="Nome do Representante" disabled oninput="atualizarResumoRepresentante('4')">
+                        <input type="text" id="repCpf4" placeholder="CPF do Representante" oninput="formatarCPF(this)" disabled onchange="atualizarResumoRepresentante('4')">
+                        <input type="text" id="repNacionalidade4" placeholder="Nacionalidade" disabled onchange="atualizarResumoRepresentante('4')">
+                        <input type="text" id="repDataNascimento4" placeholder="Data de Nascimento (DD/MM/AAAA)" oninput="formatarDataNascimento(this)" disabled onchange="atualizarResumoRepresentante('4')">
+                        <input type="text" id="repRg4" placeholder="RG - Órgão emissor" disabled onchange="atualizarResumoRepresentante('4')">
+                        <input type="text" id="repEndereco4" placeholder="Endereço - Logradouro/CEP" disabled onchange="atualizarResumoRepresentante('4')">
+                        <input type="text" id="repEstadoCivil4" placeholder="Estado Civil" disabled onchange="atualizarResumoRepresentante('4')">
+                        <input type="text" id="repProfissao4" placeholder="Profissão" disabled onchange="atualizarResumoRepresentante('4')">
+                    </div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'cnpj4')">
+                <div class="caixa-titulo">CNPJ da Empresa</div>
+                <div id="resumo-cnpj4" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <input type="text" id="cnpj4" placeholder="00.000.000/0000-00" oninput="formatarCNPJ(this)" onblur="buscarCNPJ(this.value, 'dadosEmpresa4'); atualizarResumoCNPJ('4')">
+                    <div id="dadosEmpresa4" data-razao-social="" data-endereco=""></div>
+                </div>
+            </div>
+
+            <div class="caixa-superior" onclick="selecionarCaixa(this, 'periodo4')">
+                <div class="caixa-titulo">Período</div>
+                <div id="resumo-periodo4" class="resumo-selecao"></div>
+                <div class="conteudo-caixa">
+                    <input type="month" id="inicio4" onchange="atualizarResumoPeriodo('4')"> até <input type="month" id="fim4" onchange="atualizarResumoPeriodo('4')">
+                </div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="gerarTabela('inicio4','fim4','tabela4')">Gerar Tabela</button>
+        <label>Forma de cálculo</label>
+        <select id="calculo4" onchange="configurarCalculoPrevisao()">
+            <option value="livre">Digitação Livre</option>
+            <option value="media">Média por Total</option>
+            <option value="aleatorio">Aleatórios Crescentes</option>
+            <option value="valorAlvo">Valor Alvo</option>
+        </select>
+        <div id="parametrosCalculoPrevisao" style="margin-top:10px;"></div>
+        <table id="tabela4">
+            <thead><tr><th>Mês/Ano</th><th>Valores</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <button class="btn" onclick="gerarPDF4()">Exportar para PDF</button>
+    </div>
+
     <script>
-        const fixedLogoData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAC8CAYAAABWpvg1AAAACXBIWXMAAC4jAAAuIwF4pT92AAADcGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSfvu78nIGlkPSdXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQnPz4KPHg6eG1wbWV0YSB4bWxuczp4PSdhZG9iZTpuczptZXRhLyc+CjxyZGY6UkRGIHhtbG5zOnJkZj0naHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyc+CgogPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9JycKICB4bWxuczpBdHRyaWI9J2h0dHA6Ly9ucy5hdHRyaWJ1dGlvbi5jb20vYWRzLzEuMC8nPgogIDxBdHRyaWI6QWRzPgogICA8cmRmOlNlcT4KICAgIDxyZGY6bGkgcmRmOnBhcnNlVHlwZT0nUmVzb3VyY2UnPgogICAgIDxBdHRyaWI6Q3JlYXRlZD4yMDI1LTA4LTIxPC9BdHRyaWI6Q3JlYXRlZD4KICAgICA8QXR0cmliOkV4dElkPjVkZmUyMjQ0LTJhZDUtNGNkMS05M2M2LWI1MjBjMDM0ZDU2ZTwvQXR0cmliOkV4dElkPgogICAgIDxBdHRyaWI6RmJJZD41MjUyNjU5MTQxNzk1ODA8L0F0dHJpYjpGYklkPgogICAgIDxBdHRyaWI6VG91Y2hUeXBlPjI8L0F0dHJpYjpUb3VjaFR5cGU+CiAgICA8L3JkZjpsaT4KICAgPC9yZGY6U2VxPgogIDwvQXR0cmliOkFkcz4KIDwvcmRmOkRlc2NyaXB0aW9uPgoKIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PScnCiAgeG1sbnM6ZGM9J2h0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvJz4KICA8ZGM6dGl0bGU+CiAgIDxyZGY6QWx0PgogICAgPHJkZjpsaSB4bWw6bGFuZz0neC1kZWZhdWx0Jz5Bc3NpbmF0dXJhIEUtbWFpbCBwYXJhIG8gQ29uZXhhIC0gMTwvcmRmOmxpPgogICA8L3JkZjpBbHQ+CiAgPC9kYzp0aXRsZT4KIDwvcmRmOkRlc2NyaXB0aW9uPgo8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";
+        function atualizarResumoAssinatura(aba) {
+            const select = document.getElementById(`assinatura${aba}`);
+            const resumo = document.getElementById(`resumo-assinatura${aba}`);
+            const caixaRepresentante = document.getElementById(`caixa-representante${aba}`);
+            
+            let html = '';
+            
+            if (select.value) {
+                html += `<div class="resumo-titulo">Selecionado: ${select.value}</div>`;
+                
+                if (select.value === 'Contador' || select.value === 'Ambos') {
+                    html += `
+                        <div class="resumo-dados"><strong>Contador:</strong> THIAGO VIEIRA DOS SANTOS</div>
+                        <div class="resumo-dados"><strong>CRC:</strong> 004845-O</div>
+                        <div class="resumo-dados"><strong>Estados:</strong> TO/PA/PI/MA/GO/SP/RJ/PR/SC</div>
+                    `;
+                }
+                
+                if (select.value === 'Cliente' || select.value === 'Ambos') {
+                    const cnpj = document.getElementById(`cnpj${aba}`).value;
+                    const dadosEmpresa = document.getElementById(`dadosEmpresa${aba}`);
+                    if (cnpj || dadosEmpresa.dataset.razaoSocial) {
+                        html += `<div class="resumo-titulo" style="margin-top: 5px;">Dados da Empresa:</div>`;
+                        if (dadosEmpresa.dataset.razaoSocial) {
+                            html += `<div class="resumo-dados"><strong>Razão Social:</strong> ${dadosEmpresa.dataset.razaoSocial}</div>`;
+                        }
+                        if (cnpj) {
+                            html += `<div class="resumo-dados"><strong>CNPJ:</strong> ${cnpj}</div>`;
+                        }
+                    }
+                }
+            }
+            
+            resumo.innerHTML = html;
+            
+            if (select.value === 'Cliente' || select.value === 'Ambos') {
+                caixaRepresentante.style.display = 'block';
+            } else {
+                caixaRepresentante.style.display = 'none';
+            }
+            
+            document.getElementById(`bloco-contador${aba}`).style.display = 
+                (select.value === 'Contador' || select.value === 'Ambos') ? 'block' : 'none';
+        }
+
+        function atualizarResumoRepresentante(aba) {
+            const resumo = document.getElementById(`resumo-representante${aba}`);
+            const checkbox = document.querySelector(`#caixa-representante${aba} input[type="checkbox"]`);
+            const repNome = document.getElementById(`repNome${aba}`).value;
+            const repCpf = document.getElementById(`repCpf${aba}`).value;
+            const repNacionalidade = document.getElementById(`repNacionalidade${aba}`).value;
+            const repDataNascimento = document.getElementById(`repDataNascimento${aba}`).value;
+            const repRg = document.getElementById(`repRg${aba}`).value;
+            const repEndereco = document.getElementById(`repEndereco${aba}`).value;
+            const repEstadoCivil = document.getElementById(`repEstadoCivil${aba}`).value;
+            const repProfissao = document.getElementById(`repProfissao${aba}`).value;
+            
+            let html = '';
+            
+            if (checkbox.checked) {
+                html += `<div class="resumo-titulo">Representante Legal</div>`;
+                
+                if (repNome) html += `<div class="resumo-dados"><strong>Nome:</strong> ${repNome}</div>`;
+                if (repCpf) html += `<div class="resumo-dados"><strong>CPF:</strong> ${repCpf}</div>`;
+                if (repNacionalidade) html += `<div class="resumo-dados"><strong>Nacionalidade:</strong> ${repNacionalidade}</div>`;
+                if (repDataNascimento) html += `<div class="resumo-dados"><strong>Data Nasc.:</strong> ${repDataNascimento}</div>`;
+                if (repRg) html += `<div class="resumo-dados"><strong>RG:</strong> ${repRg}</div>`;
+                if (repEndereco) html += `<div class="resumo-dados"><strong>Endereço:</strong> ${repEndereco}</div>`;
+                if (repEstadoCivil) html += `<div class="resumo-dados"><strong>Estado Civil:</strong> ${repEstadoCivil}</div>`;
+                if (repProfissao) html += `<div class="resumo-dados"><strong>Profissão:</strong> ${repProfissao}</div>`;
+                
+                if (!repNome && !repCpf) {
+                    html += `<div class="resumo-dados">Representante habilitado - preencha os dados</div>`;
+                }
+            }
+            
+            resumo.innerHTML = html;
+        }
+
+        function atualizarResumoCNPJ(aba) {
+            const cnpj = document.getElementById(`cnpj${aba}`).value;
+            const resumo = document.getElementById(`resumo-cnpj${aba}`);
+            const dadosEmpresa = document.getElementById(`dadosEmpresa${aba}`);
+            
+            let html = '';
+            
+            if (cnpj || dadosEmpresa.dataset.razaoSocial || dadosEmpresa.dataset.endereco) {
+                html += `<div class="resumo-titulo">Dados da Empresa</div>`;
+                
+                if (dadosEmpresa.dataset.razaoSocial) {
+                    html += `<div class="resumo-dados"><strong>Razão Social:</strong> ${dadosEmpresa.dataset.razaoSocial}</div>`;
+                }
+                if (cnpj) {
+                    html += `<div class="resumo-dados"><strong>CNPJ:</strong> ${cnpj}</div>`;
+                }
+                if (dadosEmpresa.dataset.endereco) {
+                    html += `<div class="resumo-dados"><strong>Endereço:</strong> ${dadosEmpresa.dataset.endereco}</div>`;
+                }
+            }
+            
+            resumo.innerHTML = html;
+        }
+
+        function atualizarResumoPeriodo(aba) {
+            const inicio = document.getElementById(`inicio${aba}`).value;
+            const fim = document.getElementById(`fim${aba}`).value;
+            const resumo = document.getElementById(`resumo-periodo${aba}`);
+            
+            let html = '';
+            
+            if (inicio || fim) {
+                html += `<div class="resumo-titulo">Período Selecionado</div>`;
+                
+                if (inicio && fim) {
+                    html += `<div class="resumo-dados"><strong>De:</strong> ${formatarPeriodo(inicio)}</div>`;
+                    html += `<div class="resumo-dados"><strong>Até:</strong> ${formatarPeriodo(fim)}</div>`;
+                } else if (inicio) {
+                    html += `<div class="resumo-dados"><strong>Início:</strong> ${formatarPeriodo(inicio)}</div>`;
+                } else if (fim) {
+                    html += `<div class="resumo-dados"><strong>Fim:</strong> ${formatarPeriodo(fim)}</div>`;
+                }
+            }
+            
+            resumo.innerHTML = html;
+        }
+
+        function selecionarCaixa(elemento, tipo) {
+            const caixas = elemento.parentElement.querySelectorAll('.caixa-superior');
+            caixas.forEach(caixa => {
+                caixa.classList.remove('selecionada');
+            });
+            
+            elemento.classList.add('selecionada');
+        }
+
+        const fixedLogoData = "";
 
         function formatarCPF(cpfInput) {
             let v = cpfInput.value.replace(/\D/g, '');
@@ -257,13 +618,17 @@
                 maximumFractionDigits: 2
             });
             input.value = valor;
-            if(input.id === 'valorTotalMedia' || input.id === 'valorAlvo' || input.id === 'valorMinimoInicial') return;
+            if(input.id === 'valorTotalMedia' || input.id === 'valorAlvo' || input.id === 'valorMinimoInicial' || 
+               input.id === 'valorTotalMediaPrev' || input.id === 'valorAlvoPrev' || input.id === 'valorMinimoInicialPrev') return;
             calcularTotais();
         }
     
         function parseMoeda(valor) {
             if (!valor) return 0;
-            return parseFloat(valor.replace(/[R$\s.]/g, "").replace(",", ".")) || 0;
+            // Remove R$, espaços e pontos, troca vírgula por ponto e converte para número
+            const numero = parseFloat(valor.replace(/[R$\s.]/g, "").replace(",", ".")) || 0;
+            // Arredonda para 2 casas decimais para evitar problemas de precisão
+            return Number(numero.toFixed(2));
         }
 
         function abrirAba(idx) {
@@ -271,6 +636,8 @@
             document.querySelectorAll('.form-section').forEach((s, i) => s.classList.toggle('active', i === idx));
             if (idx === 1) {
                 configurarCalculo();
+            } else if (idx === 3) {
+                configurarCalculoPrevisao();
             }
         }
 
@@ -278,11 +645,15 @@
             const div = document.getElementById(divId);
             div.classList.toggle('hidden', !checkbox.checked);
             div.querySelectorAll('input').forEach(inp => inp.disabled = !checkbox.checked);
+            const aba = divId.split('-')[1] === 'real' ? '1' : 
+                       divId.split('-')[1] === 'sim' ? '2' :
+                       divId.split('-')[1] === 'nao' ? '3' : '4';
+            atualizarResumoRepresentante(aba);
         }
 
-        ['1', '2', '3'].forEach(aba => {
+        ['1', '2', '3', '4'].forEach(aba => {
             document.getElementById(`assinatura${aba}`).addEventListener('change', function() {
-                document.getElementById(`bloco-contador${aba}`).style.display = (this.value === 'Contador' || this.value === 'Ambos') ? 'block' : 'none';
+                atualizarResumoAssinatura(aba);
             });
         });
 
@@ -305,6 +676,9 @@
                     div.dataset.razaoSocial = d.razao_social;
                     div.dataset.endereco = enderecoCompleto;
                     div.innerHTML = `<b>Razão Social:</b> ${d.razao_social}`;
+                    const aba = idDiv.slice(-1);
+                    atualizarResumoCNPJ(aba);
+                    atualizarResumoAssinatura(aba);
                 } else {
                     throw new Error('Resposta da API não contém razão social.');
                 }
@@ -325,7 +699,7 @@
 
             while (anoIni < anoFim || (anoIni === anoFim && mesIni <= mesFim)) {
                 let mesFormatado = String(mesIni).padStart(2, '0');
-                tbody.innerHTML += `<tr><td>${mesFormatado}/${anoIni}</td><td><input type="text" oninput="formatarMoeta(this)"></td></tr>`;
+                tbody.innerHTML += `<tr><td>${mesFormatado}/${anoIni}</td><td><input type="text" oninput="formatarMoeda(this)"></td></tr>`;
                 mesIni++;
                 if (mesIni > 12) { mesIni = 1; anoIni++; }
             }
@@ -334,7 +708,7 @@
         }
 
         function calcularTotais() {
-            ["tabela1", "tabela2"].forEach((tbl, idx) => {
+            ["tabela1", "tabela2", "tabela4"].forEach((tbl, idx) => {
                 let soma = 0;
                 document.querySelectorAll(`#${tbl} tbody tr:not(.total-row) input`).forEach(inp => {
                     soma += parseMoeda(inp.value);
@@ -385,6 +759,44 @@
             }
         }
 
+        function configurarCalculoPrevisao() {
+            const tipo = document.getElementById("calculo4").value;
+            const div = document.getElementById("parametrosCalculoPrevisao");
+            
+            if (tipo === "aleatorio") {
+                div.innerHTML = `
+                    <div class="param-group">
+                        <label>Valor Inicial</label>
+                        <input type="text" id="valorInicialPrev" oninput="formatarMoeda(this)">
+                    </div>
+                    <div class="param-group">
+                        <label>Valor Final</label>
+                        <input type="text" id="valorFinalPrev" oninput="formatarMoeda(this)">
+                    </div>
+                    <button class="btn" onclick="gerarAleatoriosPrevisao()">Gerar Valores</button>`;
+            } else if (tipo === "media") {
+                div.innerHTML = `
+                    <div class="param-group">
+                        <label>Valor Total para Dividir</label>
+                        <input type="text" id="valorTotalMediaPrev" oninput="formatarMoeda(this)">
+                    </div>
+                    <button class="btn" onclick="gerarMediaPrevisao()">Calcular Média</button>`;
+            } else if (tipo === "valorAlvo") {
+                div.innerHTML = `
+                    <div class="param-group">
+                        <label>Valor Alvo (Total a ser atingido)</label>
+                        <input type="text" id="valorAlvoPrev" oninput="formatarMoeda(this)">
+                    </div>
+                    <div class="param-group">
+                        <label>Valor Mínimo Inicial</label>
+                        <input type="text" id="valorMinimoInicialPrev" oninput="formatarMoeda(this)" value="R$ 100,00">
+                    </div>
+                    <button class="btn" onclick="gerarValorAlvoPrevisao()">Gerar Valores Crescentes</button>`;
+            } else {
+                div.innerHTML = "";
+            }
+        }
+
         function gerarAleatorios() {
             const ini = parseMoeda(document.getElementById("valorInicial").value);
             const fim = parseMoeda(document.getElementById("valorFinal").value);
@@ -406,9 +818,47 @@
             calcularTotais();
         }
 
+        function gerarAleatoriosPrevisao() {
+            const ini = parseMoeda(document.getElementById("valorInicialPrev").value);
+            const fim = parseMoeda(document.getElementById("valorFinalPrev").value);
+            const linhas = document.querySelectorAll("#tabela4 tbody tr:not(.total-row)");
+            if (linhas.length === 0) return;
+
+            let passo = (fim - ini) / (linhas.length > 1 ? linhas.length - 1 : 1);
+            linhas.forEach((tr, i) => {
+                let valorBase = ini + i * passo;
+                let aleatorio = (Math.random() * passo - (passo / 2)) * 0.1;
+                let valorFinal = Math.max(0, valorBase + aleatorio);
+                tr.querySelector("input").value = valorFinal.toLocaleString("pt-BR", { 
+                    style: "currency", 
+                    currency: "BRL",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            });    
+            calcularTotais();
+        }
+
         function gerarMedia() {
             const total = parseMoeda(document.getElementById("valorTotalMedia").value);
             const linhas = document.querySelectorAll("#tabela2 tbody tr:not(.total-row)");
+            if (linhas.length === 0) return;
+
+            const media = total / linhas.length;
+            linhas.forEach(tr => {
+                tr.querySelector("input").value = media.toLocaleString("pt-BR", { 
+                    style: "currency", 
+                    currency: "BRL",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            });
+            calcularTotais();
+        }
+
+        function gerarMediaPrevisao() {
+            const total = parseMoeda(document.getElementById("valorTotalMediaPrev").value);
+            const linhas = document.querySelectorAll("#tabela4 tbody tr:not(.total-row)");
             if (linhas.length === 0) return;
 
             const media = total / linhas.length;
@@ -452,96 +902,114 @@
             calcularTotais();
         }
 
-        function gerarValoresCrescentes(total, quantidade, minimo) {
+        function gerarValorAlvoPrevisao() {
+            const valorAlvo = parseMoeda(document.getElementById("valorAlvoPrev").value);
+            const valorMinimo = parseMoeda(document.getElementById("valorMinimoInicialPrev").value) || 100;
+            const linhas = document.querySelectorAll("#tabela4 tbody tr:not(.total-row)");
+            
+            if (linhas.length === 0 || valorAlvo <= 0) {
+                alert("Por favor, gere a tabela primeiro e informe um valor alvo válido.");
+                return;
+            }
+
+            if (valorAlvo < valorMinimo * linhas.length) {
+                alert(`O valor alvo é muito baixo para o número de meses. Mínimo necessário: R$ ${(valorMinimo * linhas.length).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`);
+                return;
+            }
+
+            const valores = gerarValoresCrescentes(valorAlvo, linhas.length, valorMinimo);
+            
+            linhas.forEach((tr, i) => {
+                tr.querySelector("input").value = valores[i].toLocaleString("pt-BR", { 
+                    style: "currency", 
+                    currency: "BRL",
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            });
+            
+            calcularTotais();
+        }
+
+        function gerarValoresCrescentes(total, quantidade, valorInicial) {
+            // Converte e valida
+            total = Number(total);
+            quantidade = Number(quantidade);
+            valorInicial = Number(valorInicial);
+
+            if (!isFinite(total) || !isFinite(quantidade) || !isFinite(valorInicial)) return [];
+            if (quantidade <= 0 || total <= 0 || valorInicial <= 0) return [];
+
+            // Caso simples: 1 mês
+            if (quantidade === 1) return [Number(total.toFixed(2))];
+
+            // Se o total for menor que o primeiro valor informado vezes quantidade,
+            // não é possível criar uma sequência crescente com esse primeiro valor.
+            // Nesses casos, distribuímos igualmente.
+            if (total < valorInicial * quantidade) {
+                const valorMedio = Number((total / quantidade).toFixed(2));
+                return Array.from({ length: quantidade }, () => valorMedio);
+            }
+
+            // Usa progressão aritmética (a_n = a1 + (n-1)*d)
+            // Soma S = n/2 * (2*a1 + (n-1)*d) -> resolve d
+            const n = quantidade;
+            const a1 = valorInicial;
+            const S = total;
+            const d = (2 * S / n - 2 * a1) / (n - 1);
+
+            // Se d for negativo (improvável aqui), fallback para incremento linear não-negativo
+            const dFinal = d > 0 ? d : 0;
+
             const valores = [];
-            
-            if (quantidade === 1) {
-                return [Math.round(total * 100) / 100];
+            for (let i = 0; i < n; i++) {
+                const ai = a1 + i * dFinal;
+                valores.push(Number(ai.toFixed(2)));
             }
-            
-            const media = total / quantidade;
-            
-            let valorAtual = Math.max(minimo, media * 0.7);
-            valores.push(Math.round(valorAtual * 100) / 100);
-            
-            const percentualMaximo = 15;
-            
-            let somaAtual = valorAtual;
-            
-            for (let i = 1; i < quantidade - 1; i++) {
-                const crescimentoMaximo = valorAtual * (percentualMaximo / 100);
-                
-                const crescimentoMinimo = Math.max(0, (total - somaAtual) / (quantidade - i) - valorAtual * 0.1);
-                
-                let crescimento = Math.min(crescimentoMaximo, crescimentoMinimo);
-                
-                if (crescimento > 0) {
-                    crescimento = crescimento * (0.7 + Math.random() * 0.3);
-                }
-                
-                crescimento = Math.max(crescimento, valorAtual * 0.01);
-                
-                valorAtual = valorAtual + crescimento;
-                valores.push(Math.round(valorAtual * 100) / 100);
-                somaAtual += valorAtual;
+
+            // Ajuste por arredondamento: corrige diferença no último elemento
+            const soma = valores.reduce((a, b) => a + b, 0);
+            const diferenca = Number((S - soma).toFixed(2));
+            if (Math.abs(diferenca) >= 0.01) {
+                valores[valores.length - 1] = Number((valores[valores.length - 1] + diferenca).toFixed(2));
             }
-            
-            const ultimoValor = total - somaAtual;
-            
-            if (ultimoValor < valores[valores.length - 1]) {
-                const diferenca = valores[valores.length - 1] - ultimoValor;
-                const ajustePorValor = diferenca / (quantidade - 1);
-                
-                for (let i = 0; i < quantidade - 1; i++) {
-                    valores[i] = Math.round((valores[i] - ajustePorValor) * 100) / 100;
-                }
-                
-                const novaSoma = valores.reduce((a, b) => a + b, 0);
-                valores.push(Math.round((total - novaSoma) * 100) / 100);
-            } else {
-                valores.push(Math.round(ultimoValor * 100) / 100);
-            }
-            
+
+            // Garante crescente (por segurança)
             for (let i = 1; i < valores.length; i++) {
-                if (valores[i] <= valores[i-1]) {
-                    const diferencaMinima = valores[i-1] * 0.01; 
-                    valores[i] = valores[i-1] + diferencaMinima;
+                if (valores[i] <= valores[i - 1]) {
+                    valores[i] = Number((valores[i - 1] + 0.01).toFixed(2));
                 }
             }
-            
-            const somaAjustada = valores.reduce((a, b) => a + b, 0);
-            if (Math.abs(somaAjustada - total) > 0.01) {
-                const diferenca = total - somaAjustada;
-                valores[valores.length - 1] = Math.round((valores[valores.length - 1] + diferenca) * 100) / 100;
-            }
-            
-            const valoresUnicos = [...new Set(valores)];
-            if (valoresUnicos.length !== valores.length) {
-                for (let i = 1; i < valores.length; i++) {
-                    if (valores[i] <= valores[i-1]) {
-                        valores[i] = valores[i-1] + (valores[i-1] * 0.01);
-                    }
-                }
-                
-                const somaFinal = valores.reduce((a, b) => a + b, 0);
-                valores[valores.length - 1] = Math.round((valores[valores.length - 1] + (total - somaFinal)) * 100) / 100;
-            }
-            
+
             return valores;
         }
-    
-        function drawFormattedText(doc, lineText, startX, startY) {
-            const parts = lineText.split('**');
-            let currentX = startX;
 
-            for (let i = 0; i < parts.length; i++) {
-                const isBold = i % 2 !== 0; 
-                const part = parts[i];
-            
-                doc.setFont("helvetica", isBold ? 'bold' : 'normal');
-                doc.text(part, currentX, startY);
-            
-                currentX += doc.getStringUnitWidth(part) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+        function drawFormattedText(doc, text, x, y, maxWidth) {
+            const boldRegex = /\*\*(.*?)\*\*/g;
+            let lastIndex = 0;
+            let match;
+            let currentX = x;
+
+            while ((match = boldRegex.exec(text)) !== null) {
+                const normalText = text.substring(lastIndex, match.index);
+                if (normalText) {
+                    doc.setFont("helvetica", "normal");
+                    doc.text(normalText, currentX, y);
+                    currentX += doc.getStringUnitWidth(normalText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+                }
+
+                const boldText = match[1];
+                doc.setFont("helvetica", "bold");
+                doc.text(boldText, currentX, y);
+                currentX += doc.getStringUnitWidth(boldText) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+
+                lastIndex = boldRegex.lastIndex;
+            }
+
+            const remainingText = text.substring(lastIndex);
+            if (remainingText) {
+                doc.setFont("helvetica", "normal");
+                doc.text(remainingText, currentX, y);
             }
         }
 
@@ -593,7 +1061,6 @@
                 const parte1 = segundaLinha.substring(0, meio);
                 const parte2 = segundaLinha.substring(meio);
                 
-                
                 const ultimoEspaco = parte1.lastIndexOf(' ');
                 if (ultimoEspaco !== -1) {
                     segundaLinha = parte1.substring(0, ultimoEspaco) + '\n' + parte1.substring(ultimoEspaco + 1) + parte2;
@@ -624,7 +1091,6 @@
                 let documentoPrincipal;
 
                 if (clienteInfo.razaoSocial && clienteInfo.razaoSocial !== "EMPRESA NÃO INFORMADA") {
-                    
                     nomePrincipal = formatarRazaoSocialParaPDF(clienteInfo.razaoSocial);
                     documentoPrincipal = `CNPJ: ${clienteInfo.cnpj}`;
                 } else {
@@ -632,7 +1098,6 @@
                     documentoPrincipal = `CPF: ${clienteInfo.repCpf}`;
                 }
 
-                
                 const nomeLinhas = nomePrincipal.split('\n');
                 let currentY = y + 5;
                 
@@ -641,7 +1106,6 @@
                     currentY += 5;
                 });
 
-                
                 doc.setFont("helvetica", 'normal');
                 doc.setFontSize(10);
                 doc.text(documentoPrincipal, x + lineLength / 2, currentY, { align: 'center' });
@@ -651,23 +1115,19 @@
             const drawContador = (x, y) => {
                 doc.line(x, y, x + lineLength, y);
 
-                
                 doc.setFont("helvetica", 'bold');
                 doc.text(contadorInfo.nome.toUpperCase(), x + lineLength / 2, y + 5, { align: 'center' });
 
-                
                 doc.setFont("helvetica", 'normal');
                 doc.setFontSize(10);
                 doc.text(contadorInfo.crc, x + lineLength / 2, y + 10, { align: 'center' });
 
-                
                 if (contadorInfo.crcEstados) {
                     doc.text(contadorInfo.crcEstados, x + lineLength / 2, y + 15, { align: 'center' });
                 }
                 doc.setFontSize(12);
             };
 
-            
             const signatureBaseY = startY + 10; 
 
             if (assinatura === 'Cliente') {
@@ -675,14 +1135,13 @@
             } else if (assinatura === 'Contador') {
                 drawContador(center - lineLength / 2, signatureBaseY);
             } else if (assinatura === 'Ambos') {
-                
                 drawCliente(left, startY + 10); 
                 drawContador(right, startY + 30); 
             }
         }
 
         function getCommonData(aba) {
-            const abaMap = { '1': 'real', '2': 'sim', '3': 'nao' };
+            const abaMap = { '1': 'real', '2': 'sim', '3': 'nao', '4': 'prev' };
             const tipoAba = abaMap[aba];
 
             const empresaDiv = document.getElementById(`dadosEmpresa${aba}`);
@@ -725,7 +1184,7 @@
             return { clienteInfo, representanteTexto, contadorInfo };
         }
     
-        function gerarPDF(aba, titulo, fraseDeclaracao) {
+        function gerarPDF(aba, titulo, fraseDeclaracao, isPrevisao = false) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const data = getCommonData(aba);
@@ -754,8 +1213,13 @@
             const lines = doc.splitTextToSize(frase, doc.internal.pageSize.width - 20);
             let currentY = startY + 35;
             
-            for (let i = 0; i < lines.length; i++) {
-                drawFormattedText(doc, lines[i], 10, currentY);
+            if (lines.length > 0) {
+                drawFormattedText(doc, lines[0], 15, currentY, doc.internal.pageSize.width - 25);
+                currentY += 5;
+            }
+            
+            for (let i = 1; i < lines.length; i++) {
+                drawFormattedText(doc, lines[i], 10, currentY, doc.internal.pageSize.width - 20);
                 currentY += 5;
             }
             
@@ -776,7 +1240,6 @@
                 if (typeof doc.autoTable !== 'undefined') {
                     const alturaTabela = (valores.length + 1) * 10; 
 
-                    
                     if (finalY + alturaTabela > doc.internal.pageSize.height) {
                         doc.addPage();
                         finalY = 20; 
@@ -821,7 +1284,7 @@
                         }
                     });
                     
-                    finalY = doc.lastAutoTable.finalY + 15;
+                    finalY = doc.lastAutoTable.finalY + 5;
                 } else {
                     console.error("jsPDF-autotable não foi carregado corretamente.");
                     alert("Erro ao gerar PDF: A biblioteca de tabelas não foi encontrada. Tente recarregar a página.");
@@ -829,7 +1292,7 @@
                 }
             }
 
-            const alturaNecessaria = 60;
+            const alturaNecessaria = 50;
 
             if (finalY + alturaNecessaria > doc.internal.pageSize.height) {
                 doc.addPage();
@@ -840,7 +1303,9 @@
             let dataLocal = `Palmas (TO), ${hoje.getDate()} de ${hoje.toLocaleString("pt-BR", { month: "long" })} de ${hoje.getFullYear()}`;
             doc.setFont("helvetica", "normal");
             doc.setTextColor(0, 0, 0);
-            doc.text(dataLocal, 105, finalY + 20, { align: "center" });
+            doc.text(dataLocal, doc.internal.pageSize.width - 10, finalY + 10, { align: "right" });
+            
+            doc.text("Por ser verdade, firmamos o presente sob as penas da lei.", 10, finalY + 20);
 
             const assinatura = document.getElementById(`assinatura${aba}`).value;
             drawSignatures(doc, finalY + 35, assinatura, data.clienteInfo, data.contadorInfo);
@@ -853,14 +1318,14 @@
             const inicio = document.getElementById("inicio1").value;
             const fim = document.getElementById("fim1").value;
             const frase = `A empresa **{razaoSocial}**, inscrita no CNPJ sob o n° ${document.getElementById('cnpj1').value}, com sede em ${document.getElementById('dadosEmpresa1').dataset.endereco}{representante}, declara por meio deste o faturamento no período de  **${formatarPeriodo(inicio)}** até **${formatarPeriodo(fim)}** conforme descriminado abaixo:`;
-            gerarPDF('1', 'RELATÓRIO DE FATURAMENTO', frase);
+            gerarPDF('1', 'RELAÇÃO DE FATURAMENTO', frase);
         }
 
         function gerarPDF2() {
             const inicio = document.getElementById("inicio2").value;
             const fim = document.getElementById("fim2").value;
             const frase = `A empresa **{razaoSocial}**, inscrita no CNPJ sob o n° ${document.getElementById('cnpj2').value}, com sede em ${document.getElementById('dadosEmpresa2').dataset.endereco}{representante}, declara por meio deste o faturamento no período de  **${formatarPeriodo(inicio)}** até **${formatarPeriodo(fim)}** conforme descriminado abaixo:`;
-            gerarPDF('2', 'RELATÓRIO DE FATURAMENTO', frase);
+            gerarPDF('2', 'RELAÇÃO DE FATURAMENTO', frase);
         }
 
         function gerarPDF3() {
@@ -870,14 +1335,23 @@
             gerarPDF('3', 'DECLARAÇÃO DE NÃO FATURAMENTO', frase);
         }
 
-        // Sistema desenvolvido por: Davi Vieira
-        
+        function gerarPDF4() {
+            const inicio = document.getElementById("inicio4").value;
+            const fim = document.getElementById("fim4").value;
+            const frase = `A empresa **{razaoSocial}**, inscrita no CNPJ sob o n° ${document.getElementById('cnpj4').value}, com sede em ${document.getElementById('dadosEmpresa4').dataset.endereco}{representante}, declara por meio deste a previsão de faturamento no período de  **${formatarPeriodo(inicio)}** até **${formatarPeriodo(fim)}** conforme descriminado abaixo:`;
+            gerarPDF('4', 'PREVISÃO DE FATURA', frase, true);
+        }
+
         window.onload = function() {
             configurarCalculo();
+            ['1', '2', '3', '4'].forEach(aba => {
+                atualizarResumoAssinatura(aba);
+                atualizarResumoRepresentante(aba);
+                atualizarResumoCNPJ(aba);
+                atualizarResumoPeriodo(aba);
+            });
         };
     </script>
 </body>
 </html>
-
-
 
